@@ -91,6 +91,7 @@ dependencies = [
     { name = "einx" },
     { name = "jaxtyping" },
     { name = "numpy" },
+    { name = "pathlib" },
     { name = "psutil" },
     { name = "pytest" },
     { name = "pytest-timeout" },
@@ -103,12 +104,18 @@ dependencies = [
     { name = "wandb" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "line-profiler" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "einops", specifier = ">=0.8" },
     { name = "einx", specifier = ">=0.4" },
     { name = "jaxtyping", specifier = ">=0.3" },
     { name = "numpy", specifier = ">=2.4" },
+    { name = "pathlib", specifier = ">=1.0.1" },
     { name = "psutil", specifier = ">=7" },
     { name = "pytest", specifier = ">=9.0" },
     { name = "pytest-timeout" },
@@ -120,6 +127,9 @@ requires-dist = [
     { name = "ty", specifier = ">=0.0.26" },
     { name = "wandb", specifier = ">=0.25" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "line-profiler", specifier = ">=5.1.0" }]
 
 [[package]]
 name = "cuda-bindings"
@@ -300,6 +310,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "line-profiler"
+version = "5.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/21/2e/468665e93bda3124667f284bb71a5074769647bf264fb7b9114995753067/line_profiler-5.1.0.tar.gz", hash = "sha256:5717a2dccf0ced65fd19ba5e479581c47412831fe768bc211c6d0f5ba1ad9b47", size = 197869, upload-time = "2026-10-18T22:40:34.074Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b6/d0/b43ed562eb8c9139e42066cf13ce36ba0cfa306d7ccad5c4b9afd2c6a92f/line_profiler-5.1.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:554fa6e29ec244a98ac33735ebafafbcbab3d7e7043eb16ef1a23123fcd73d9c", size = 299307, upload-time = "2026-10-18T22:40:02.256Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/19/84abf48c9f50da103119c98600e6bd239e024e74eb37e7ae1e1c50bf29ac/line_profiler-5.1.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:15fedd306b922eb41e959a8813af30368e4cc052ce284e04b8e60ac3823fec75", size = 287186, upload-time = "2026-10-18T22:40:03.686Z" },
+    { url = "https://files.pythonhosted.org/packages/be/fb/271cfc1babec9b7f47b1690a8a6fa664c0fc7670b755eda235c5e3a90b07/line_profiler-5.1.0-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:db3c2a062032ad80291a6c0abeed1b22f0c23c81ebef51adf2fa989bd1c6754e", size = 1328254, upload-time = "2026-10-18T22:40:05.307Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/46/2a931690d0d0923874e4f711d2e20b3e19bd6c37e4511f3e87f74a5b180a/line_profiler-5.1.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:38603a36a0b381f8455b854c36a9ea8d7269bbc187f1546e50ef16b2e5b7c1ff", size = 1352814, upload-time = "2026-10-18T22:40:07.014Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/ee/6d3bfc2abef7de6d4a982ff05b911fa1dc1e0188229db676683d7f7889fe/line_profiler-5.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:75ea9c2bcfc9e716d06cc2e9b2c3a9c0918cfd24d5de60c27c2a8caa6aacfa02", size = 471953, upload-time = "2026-10-18T22:40:08.841Z" },
+    { url = "https://files.pythonhosted.org/packages/81/de/06fc186234321f97b56721ea6b3f27f8876db727f10fae29298f3ec2631b/line_profiler-5.1.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:c32116f57f2bfa5259673e3105bfb8686f81ee002cdc7c17b43fd46f41a74fdc", size = 301166, upload-time = "2026-10-18T22:40:10.253Z" },
+    { url = "https://files.pythonhosted.org/packages/33/74/f4b7eae0b8eaae393443902e881d844f58351cfa92766c668a5966ba3d0e/line_profiler-5.1.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:d5cb6571bd1ead4a41b4fbe981800dc9065e3b13a919b906ec4123036f26ba54", size = 288016, upload-time = "2026-10-18T22:40:11.799Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/7e/75facb6b91345d3a8fe9ac735c65533907808ff9bea1d18af72d3f7880ac/line_profiler-5.1.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:56c24d69c319fde6358d4a3bccc19cb71fce8dfae6a8ae34a3a795fc51f077fc", size = 1326120, upload-time = "2026-10-18T22:40:13.498Z" },
+    { url = "https://files.pythonhosted.org/packages/48/af/245563d7b245402e17e549e2414bcab02c90c690ddc9a18ea019a9b2a12d/line_profiler-5.1.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7d2ca22ebbe2aa579509799ba9af83ab913b6aba858be02ce70e6ebbca1bea75", size = 1348688, upload-time = "2026-10-18T22:40:15.233Z" },
+    { url = "https://files.pythonhosted.org/packages/db/7e/dfaf4e71cef94c957a6c3183d5d84946074ccd1b44df1b6f9fb90c85d86d/line_profiler-5.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:1656ea47d76336c2b74fab68ae5e7158bd65db526243fcdf1e2f20a6b95d567f", size = 471925, upload-time = "2026-10-18T22:40:17.091Z" },
 ]
 
 [[package]]
@@ -557,6 +588,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
+]
+
+[[package]]
+name = "pathlib"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/aa/9b065a76b9af472437a0059f77e8f962fe350438b927cb80184c32f075eb/pathlib-1.0.1.tar.gz", hash = "sha256:6940718dfc3eff4258203ad5021090933e5c04707d5ca8cc9e73c94a7894ea9f", size = 49298, upload-time = "2014-09-03T15:41:57.18Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/f9/690a8600b93c332de3ab4a344a4ac34f00c8f104917061f779db6a918ed6/pathlib-1.0.1-py3-none-any.whl", hash = "sha256:f35f95ab8b0f59e6d354090350b44a80a80635d22efdedfa84c7ad1cf0a74147", size = 14363, upload-time = "2022-05-04T13:37:20.585Z" },
 ]
 
 [[package]]
