@@ -39,11 +39,11 @@ if __name__ == "__main__":
 
     chunk_iterator = yield_chunks(
         pathlib.Path(__file__).parent.parent /
-                "data/TinyStoriesV2-GPT4-debug.txt")
+                "data/TinyStoriesV2-GPT4-train.txt")
 
     with open(
         pathlib.Path(__file__).parent.parent /
-            "data/encoding/TinyStoriesV2-GPT4-debug-tokenized.np",
+            "data/encoding/TinyStoriesV2-GPT4-train-tokenized.np",
         "wb"
     ) as f_out:
         for token_ids in itertools.batched(

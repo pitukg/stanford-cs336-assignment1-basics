@@ -167,8 +167,10 @@ class Tokenizer:
         and (optionally) a list of special tokens.
         """
         self.vocab = vocab
-        self.merges: list[tuple[tuple[bytes, bytes], bytes]] = [
-            (merge, b''.join(merge))
+        self.merges = merges
+        self.merges_to_id = {merge: i for i, merge in enumerate(merges)}
+        self.aux_merges = [
+            b''.join(merge)
             for merge in merges
         ]
         self.special_tokens = special_tokens
@@ -234,14 +236,12 @@ class Tokenizer:
 
     def _encode_pretokens(self, pretokens: list[tuple[tuple[bytes, ...], bytes]]):
         def apply_merge(pretoken: tuple[bytes, ...], merge: tuple[bytes, bytes],
-                        aux_pretoken: bytes | None, aux_merge: bytes
+                        aux_merge: bytes
                         ):
-            if aux_pretoken is not None and aux_merge not in aux_pretoken:
-                return pretoken
             for i in range(len(pretoken)-1):
                 if pretoken[i:i+2] == merge:
                     recursed_merge = apply_merge(
-                        pretoken[i+2:], merge, None, aux_merge)
+                        pretoken[i+2:], merge, aux_merge)
                     ret = (
                         *pretoken[:i],
                         aux_merge,
@@ -249,10 +249,24 @@ class Tokenizer:
                     )
                     return ret
             return pretoken
-        for merge, aux_merge in self.merges:
-            for i in range(len(pretokens)):
+
+        for i in range(len(pretokens)):
+            while True:
+                applicable_merge_ids: list[int] = []
                 pretoken, aux_pretoken = pretokens[i]
-                pretokens[i] = (apply_merge(pretoken, merge, aux_pretoken, aux_merge), aux_pretoken)
+                for a, b in zip(pretoken[:-1], pretoken[1:]):
+                    merge_id = self.merges_to_id.get((a, b))
+                    if merge_id is not None:
+                        applicable_merge_ids.append(merge_id)
+                if not applicable_merge_ids:
+                    break
+                priority_merge_id = min(applicable_merge_ids)
+                priority_merge = self.merges[priority_merge_id]
+                aux_priority_merge = self.aux_merges[priority_merge_id]
+                pretokens[i] = (
+                    apply_merge(pretoken, priority_merge, aux_priority_merge),
+                    aux_pretoken
+                )
         return [
             self.reverse_vocab[token_bytes]
             for pretoken, _ in pretokens
