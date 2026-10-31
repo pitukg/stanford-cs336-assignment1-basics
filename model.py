@@ -65,7 +65,9 @@ class RMSNorm(nn.Module):
     ):
         super().__init__(*args, **kwargs)
         self.eps = eps
-        self.weight = nn.Parameter(torch.ones(d_model))
+        self.weight = nn.Parameter(
+            torch.ones(d_model, dtype=dtype, device=device)
+        )
 
     def forward(self, x: Float[Tensor, "... d"]) -> Float[Tensor, "... d"]:
         in_dtype = x.dtype
