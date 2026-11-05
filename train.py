@@ -2,6 +2,7 @@ import argparse
 from functools import partial
 import itertools
 import math
+import os
 from pathlib import Path
 import shlex
 import sys
@@ -89,6 +90,10 @@ def train(
         torch.cuda.synchronize(device)
     perf_counter, tokens_processed = time.perf_counter(), 0
     start_perf_counter = perf_counter
+    session_did_clip, session_clip_denom = 0, 0
+    latest_preclip_grad_norm = None
+    interval_grad_norms = []
+    interval_clipped = 0
 
     while iter < n_steps:
         if iter % eval_every_n_steps == 0:
@@ -107,10 +112,16 @@ def train(
             )
         loss = cross_entropy(logits, labels.to(device)).mean(dim=None)
         loss.backward()
-        optimizers.clip_grads(
+        clip_result = optimizers.clip_grads(
             list(model.parameters()),
             max_grad_l2_norm
         )
+        latest_preclip_grad_norm = clip_result['norm']
+        interval_grad_norms.append(clip_result["norm"])
+        interval_clipped += int(clip_result["did_clip"])
+        if clip_result['did_clip']:
+            session_did_clip += 1
+        session_clip_denom += 1
         lr = lr_schedule(iter)
         for group in optim.param_groups:
             group["lr"] = lr
@@ -133,6 +144,8 @@ def train(
                 f"\tthroughput={tokens_elapsed / elapsed / 1e3:,.2f}k tok/s"
                 f"\tlr={lr:.2e}"
                 f"\tperplexity={torch.exp(loss.detach().cpu()).item():.2f}"
+                f"\tpreclip_grad_norm={latest_preclip_grad_norm:.2f}"
+                f"\tsession_clip_fraction={session_did_clip/session_clip_denom:.2%}"
             )
             if wandb.run is not None:
                 loss_value = loss.detach().cpu().item()
@@ -141,11 +154,23 @@ def train(
                     "train/cross_entropy": loss_value,
                     "train/perplexity": math.exp(loss_value),
                     "train/lr": lr,
+                    "train/preclip_grad_norm": latest_preclip_grad_norm,
+                    "train/session_clip_fraction": session_did_clip / session_clip_denom,
+                    "train/clip_threshold": max_grad_l2_norm,
+                    "train/preclip_grad_norm_mean": (
+                        sum(interval_grad_norms) / len(interval_grad_norms)
+                    ),
+                    "train/preclip_grad_norm_max": max(interval_grad_norms),
+                    "train/interval_clip_fraction": (
+                        interval_clipped / len(interval_grad_norms)
+                    ),
                     "perf/session_tokens": cum_tokens_processed,
                     "perf/session_elapsed_s": total_elapsed,
                     "perf/interval_s": elapsed,
                     "perf/tokens_per_s": tokens_elapsed / elapsed,
                 })
+            interval_grad_norms.clear()
+            interval_clipped = 0
 
         if (iter-1) % cpt_every_n_steps == 0 or iter == n_steps:
             save_checkpoint(model, optim, iter, cpt_file)
@@ -159,6 +184,7 @@ def get_argparser():
     parser.add_argument('--num-layers', required=True, type=int)
     parser.add_argument('--vocab-size', default=10_000, type=int)
     parser.add_argument('--d-model', required=True, type=int)
+    parser.add_argument('--d-ff', required=False, type=int, default=None)
     parser.add_argument('--num-heads', required=True, type=int)
     parser.add_argument('--theta', default=10_000, type=float)
     parser.add_argument('--context-length', default=256, type=int)
@@ -167,6 +193,7 @@ def get_argparser():
     parser.add_argument('--dtype', default='float32')
 
     parser.add_argument('--lr', required=True, type=float)
+    parser.add_argument('--lr-min', required=False, type=float, default=None)
     parser.add_argument('--weight-decay', required=True, type=float)
     parser.add_argument('--beta1', default=0.9, type=float)
     parser.add_argument('--beta2', default=0.999, type=float)
@@ -180,6 +207,8 @@ def get_argparser():
     )
     parser.add_argument('--batch-size', required=True, type=int)
     parser.add_argument('--n-steps', default=1, type=int)
+    parser.add_argument('--warmup', required=False, type=int, default=None)
+    parser.add_argument('--final', required=False, type=int, default=None)
 
     parser.add_argument('--rundir', required=True)
     parser.add_argument('--overwrite', action='store_true')
@@ -193,6 +222,15 @@ def get_argparser():
 def main():
     parser = get_argparser()
     args = parse_config(parser)
+
+    if args.d_ff is None:
+        args.d_ff = 64 * math.ceil((8 * args.d_model) / (3 * 64))
+    if args.warmup is None:
+        args.warmup = args.n_steps // 4
+    if args.final is None:
+        args.final = (args.n_steps * 3) // 4
+    if args.lr_min is None:
+        args.lr_min = args.lr / 2
 
     args.rundir = Path(args.rundir).resolve()
     args.rundir.mkdir(parents=True, exist_ok=True)
@@ -221,7 +259,7 @@ def main():
         num_heads=args.num_heads,
         theta=args.theta,
         max_seq_len=args.context_length,
-        d_ff=64 * math.ceil((8 * args.d_model) / (3 * 64)),
+        d_ff=args.d_ff,
         device=args.device,
         dtype=args.dtype
     )
@@ -260,9 +298,9 @@ def main():
     lr_schedule = partial(
         cosine_schedule,
         lr_max=args.lr,
-        lr_min=args.lr / 2,
-        warmup=(args.n_steps * 1) // 4,
-        final=(args.n_steps * 3) // 4,
+        lr_min=args.lr_min,
+        warmup=args.warmup,
+        final=args.final,
     )
 
     if args.wandb:
@@ -275,7 +313,7 @@ def main():
             project=args.wandb_project,
             entity=args.wandb_entity or None,
             name=f"{args.rundir.name}-{time.time_ns()}",
-            group=args.rundir.name,
+            group=os.environ.get("WANDB_RUN_GROUP", args.rundir.name),
             config=run_config,
             dir=str(args.rundir),
             job_type="train",

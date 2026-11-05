@@ -82,19 +82,21 @@ def clip_grads(
     params: Iterable[torch.nn.Parameter],
     max_grad_l2_norm: float,
     eps: float = 1e-6
-) -> None:  # in place
-    norm = torch.sqrt(sum(
-        torch.norm(p.grad.data)**2
-        for p in params
-        if p.grad is not None
-    ))
-    if norm.cpu().item() <= max_grad_l2_norm:
-        return
-    else:
-        scaler = max_grad_l2_norm / (norm + eps)
-        for p in params:
-            if p.grad is not None:
-                p.grad.data *= scaler
+) -> dict:  # in place, return pre-clip l2 norm
+    with torch.no_grad():
+        norm = torch.sqrt(sum(
+            torch.norm(p.grad)**2
+            for p in params
+            if p.grad is not None
+        )).cpu().item()
+        if norm <= max_grad_l2_norm:
+            return {'norm': norm, 'did_clip': False}
+        else:
+            scaler = max_grad_l2_norm / (norm + eps)
+            for p in params:
+                if p.grad is not None:
+                    p.grad *= scaler
+        return {'norm': norm, 'did_clip': True}
 
 
 if __name__ == "__main__":

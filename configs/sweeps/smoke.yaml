@@ -1,0 +1,12 @@
+name: smoke-runner-01
+base_config: ../smoke.yaml
+
+resources:
+  gpu: A10
+  timeout_s: 1800
+  concurrency: 1
+
+trials:
+  - name: smoke
+    overrides: {}
+

@@ -89,6 +89,11 @@ def main():
         train_parser,
         ["--config", str(args.rundir / "config.yaml")],
     )
+    if train_args.d_ff is None:  # Legacy
+        train_args.d_ff = 64 * math.ceil(
+            (8 * train_args.d_model) / (3 * 64)
+        )
+
 
     model = model_module.TransformerLM(
         num_layers=train_args.num_layers,
@@ -97,7 +102,7 @@ def main():
         num_heads=train_args.num_heads,
         theta=train_args.theta,
         max_seq_len=train_args.context_length,
-        d_ff=64 * math.ceil((8 * train_args.d_model) / (3 * 64)),
+        d_ff=train_args.d_ff,
         device=args.device,
         dtype=args.dtype
     )
