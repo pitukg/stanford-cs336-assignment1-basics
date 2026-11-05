@@ -2,11 +2,12 @@ import argparse
 import math
 from pathlib import Path
 import shlex
-from jaxtyping import Float, Int
+from jaxtyping import Bool, Float, Int
 from torch import nn
 import torch
 
 from checkpointing import load_checkpoint
+from config import parse_config
 from cs336_basics.tokenizer import Tokenizer
 import model as model_module
 from model import softmax
@@ -20,6 +21,7 @@ def generate(
     temperature: float = 1.0,
     stop_tokens: list[int] = [],
     context_length: int = int(1e7),
+    top_p = 1.0,
 ) -> Int[torch.Tensor, "... completion"]:
     assert max_tokens > 0
     assert temperature > 0
@@ -35,7 +37,21 @@ def generate(
         logits = logits / temperature
         ps: Float[torch.Tensor, "... vocab"] = \
             softmax(logits, dim=-1)
-        # TODO max p if desired
+        if top_p < 1.0:
+            perm: Int[torch.Tensor, "... vocab"] = \
+                ps.argsort(dim=-1, descending=True)
+            ranks = perm.argsort(dim=-1, descending=False)
+            sorted_ps = torch.gather(ps, dim=-1, index=perm)
+            sorted_cum_ps = sorted_ps.cumsum(dim=-1)
+            ks = torch.argmax(
+                (sorted_cum_ps >= top_p).float(),
+                dim=-1,
+                keepdim=True
+            )
+            masked_ps = ps.masked_fill(ranks > ks, 0)
+            assert torch.all(masked_ps.sum(dim=-1) >= top_p, dim=None)
+            ps = masked_ps / masked_ps.sum(
+                dim=-1, keepdim=True)
         completion_id: Int[torch.Tensor, "..."] = \
             torch.multinomial(ps, num_samples=1)
         completion_ids.append(completion_id)
@@ -53,22 +69,26 @@ def main():
     parser.add_argument('--prompt')
     parser.add_argument('--max-tokens', default=32, type=int)
     parser.add_argument('--temperature', default=1.0, type=float)
+    parser.add_argument('--top-p', default=1.0, type=float)
     parser.add_argument('--device', default='cpu')
     parser.add_argument('--dtype', default='float32')
 
     parser.add_argument('--rundir', required=True)
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path(__file__).parent / "data" / "encoding",
+    )
 
     args = parser.parse_args()
     args.dtype = None if args.dtype is None else getattr(torch, args.dtype)
     args.rundir = Path(args.rundir).resolve()
 
     train_parser = train.get_argparser()
-    with open(args.rundir / 'command.sh', 'r') as f:
-        saved_command = f.read()
-        saved_args = shlex.split(saved_command)
-        prefix_len = 3 if saved_args[1] == "-m" else 2
-        train_args = train_parser.parse_args(
-            saved_args[prefix_len:])
+    train_args = parse_config(
+        train_parser,
+        ["--config", str(args.rundir / "config.yaml")],
+    )
 
     model = model_module.TransformerLM(
         num_layers=train_args.num_layers,
@@ -86,10 +106,8 @@ def main():
     _ = load_checkpoint(cpt_file, model, optim=None)
 
     tokenizer = Tokenizer.from_files(
-        vocab_filepath=Path(__file__).parent / \
-            "data/encoding/TinyStoriesV2-GPT4-train-vocab.pk",
-        merges_filepath=Path(__file__).parent / \
-            "data/encoding/TinyStoriesV2-GPT4-train-merges.pk",
+        vocab_filepath=args.data_dir / f"{train_args.dataset}-train-vocab.pk",
+        merges_filepath=args.data_dir / f"{train_args.dataset}-train-merges.pk",
         special_tokens=["<|endoftext|>", "<|endoftext|><|endoftext|>"]
     )
     prompt_ids = torch.tensor(tokenizer.encode(
@@ -100,7 +118,8 @@ def main():
         args.max_tokens,
         args.temperature,
         tokenizer.encode('<|endoftext|>'),
-        train_args.context_length
+        train_args.context_length,
+        args.top_p,
     )
     completion = tokenizer.decode(
         completion_ids.cpu().squeeze(dim=0).tolist())

@@ -1,0 +1,24 @@
+num_layers: 2
+vocab_size: 10000
+d_model: 128
+num_heads: 4
+theta: 10000.0
+context_length: 128
+
+device: cuda
+dtype: float32
+
+lr: 0.001
+weight_decay: 0.1
+beta1: 0.9
+beta2: 0.999
+max_grad_l2_norm: 1.0
+
+dataset: TinyStoriesV2-GPT4
+batch_size: 8
+n_steps: 200
+rundir: .runs/tinystories-yaml-smoke
+
+wandb: true
+wandb_project: cs336-basics
+wandb_entity: ""

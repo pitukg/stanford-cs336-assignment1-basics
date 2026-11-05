@@ -20,6 +20,7 @@ dependencies = [
     "ty>=0.0.26",
     "ruff>=0.15.8",
     "pathlib>=1.0.1",
+    "pyyaml>=6.0.3",
 ]
 
 [build-system]
@@ -49,6 +50,7 @@ line-length = 120
 [dependency-groups]
 dev = [
     "line-profiler>=5.1.0",
+    "modal>=1.1",
 ]
 
 [tool.ruff.lint]

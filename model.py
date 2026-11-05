@@ -94,9 +94,13 @@ class SwiGLU(nn.Module):
         self.w2 = Linear(d_ff, d_model, device=device, dtype=dtype)
         self.w3 = Linear(d_model, d_ff, device=device, dtype=dtype)
 
+    @staticmethod
+    def silu(x: Float[Tensor, "..."]) -> Float[Tensor, "..."]:
+        return x * torch.sigmoid(x)
+
     def forward(self, x: Float[Tensor, "... d"]) -> Float[Tensor, "... d"]:
         pre_gate = self.w1(x)
-        gate = pre_gate * torch.sigmoid(pre_gate)
+        gate = self.silu(pre_gate)
         up_proj = self.w3(x)
         out = self.w2(up_proj * gate)
         return out

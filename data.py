@@ -9,7 +9,7 @@ def get_batch(
     batch_size: int,
     context_length: int,
     device: torch.device,
-    vocab_size: int
+    vocab_size: int | None = None
 ) -> tuple[
     Int[torch.LongTensor, "batch_size context_length"],
     Int[torch.LongTensor, "batch_size context_length"]
@@ -27,6 +27,8 @@ def get_batch(
     ).to(device=device, dtype=torch.long)
     assert torch.all(0 <= inputs).item() and \
         torch.all(0 <= labels).item()
-    assert torch.all(inputs < vocab_size).item() and \
-        torch.all(labels < vocab_size).item()
+    if vocab_size is not None:
+        # Sanity check
+        assert torch.all(inputs < vocab_size).item() and \
+            torch.all(labels < vocab_size).item()
     return (inputs, labels)
