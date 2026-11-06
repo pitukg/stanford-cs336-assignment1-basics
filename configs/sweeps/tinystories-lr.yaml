@@ -29,3 +29,12 @@ trials:
       lr: 1.0e-2
       lr_min: 2.5e-3
 
+  - name: lr-3e-2
+    overrides:
+      lr: 3.0e-2
+      lr_min: 7.5e-3
+
+  - name: lr-1e-1
+    overrides:
+      lr: 1.0e-1
+      lr_min: 2.5e-2

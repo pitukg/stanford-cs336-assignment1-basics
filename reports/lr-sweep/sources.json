@@ -1,0 +1,61 @@
+{
+  "exported_at_utc": "2026-11-06T15:44:28.636102+00:00",
+  "runs": [
+    {
+      "lr": "3e-4",
+      "id": "2iso2lvi",
+      "state": "finished",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/2iso2lvi",
+      "first_logged_update": 1,
+      "last_step": 10000
+    },
+    {
+      "lr": "1e-3",
+      "id": "2a9winki",
+      "state": "failed",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/2a9winki",
+      "first_logged_update": 1,
+      "last_step": 3816
+    },
+    {
+      "lr": "1e-3",
+      "id": "y8519qgq",
+      "state": "finished",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/y8519qgq",
+      "first_logged_update": 3806,
+      "last_step": 10000
+    },
+    {
+      "lr": "3e-3",
+      "id": "7arns66f",
+      "state": "finished",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/7arns66f",
+      "first_logged_update": 1,
+      "last_step": 10000
+    },
+    {
+      "lr": "1e-2",
+      "id": "ihk28xje",
+      "state": "finished",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/ihk28xje",
+      "first_logged_update": 1,
+      "last_step": 10000
+    },
+    {
+      "lr": "3e-2",
+      "id": "bxd9y7lz",
+      "state": "running",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/bxd9y7lz",
+      "first_logged_update": 1,
+      "last_step": 7836
+    },
+    {
+      "lr": "1e-1",
+      "id": "bx0y6qc7",
+      "state": "running",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/bx0y6qc7",
+      "first_logged_update": 1,
+      "last_step": 8151
+    }
+  ]
+}
