@@ -1,7 +1,7 @@
 from einops import einsum, rearrange, reduce
 from jaxtyping import Bool, Float, Int
 import math
-from typing import Any
+from typing import Any, Literal
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -79,6 +79,30 @@ class RMSNorm(nn.Module):
         return result.to(in_dtype)
 
 
+class SiLU(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        d_ff: int,
+        *args,
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.w1 = Linear(d_model, d_ff, device=device, dtype=dtype)
+        self.w2 = Linear(d_ff, d_model, device=device, dtype=dtype)
+
+    @staticmethod
+    def nonlinearity(x: Float[Tensor, "..."]) -> Float[Tensor, "..."]:
+        return x * torch.sigmoid(x)
+
+    def forward(self, x: Float[Tensor, "... d"]) -> Float[Tensor, "... d"]:
+        up_proj = self.w1(x)
+        out = self.w2(self.nonlinearity(up_proj))
+        return out
+
+
 class SwiGLU(nn.Module):
     def __init__(
         self,
@@ -94,13 +118,9 @@ class SwiGLU(nn.Module):
         self.w2 = Linear(d_ff, d_model, device=device, dtype=dtype)
         self.w3 = Linear(d_model, d_ff, device=device, dtype=dtype)
 
-    @staticmethod
-    def silu(x: Float[Tensor, "..."]) -> Float[Tensor, "..."]:
-        return x * torch.sigmoid(x)
-
     def forward(self, x: Float[Tensor, "... d"]) -> Float[Tensor, "... d"]:
         pre_gate = self.w1(x)
-        gate = self.silu(pre_gate)
+        gate = SiLU.nonlinearity(pre_gate)
         up_proj = self.w3(x)
         out = self.w2(up_proj * gate)
         return out
@@ -262,18 +282,32 @@ class TransformerBlock(nn.Module):
         d_ff: int,
         device: torch.device | None = None,
         dtype: torch.dtype | None = None,
+        norm_style: Literal["pre", "post", "none"] = "pre",
+        use_rope: bool = True,
+        ffn_type: Literal["swiglu", "silu"] = "swiglu",
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         assert d_model % num_heads == 0, "Expecting num_heads to divide d_model"
+        if use_rope:
+            rope = RoPE(
+                d_model // num_heads, theta, max_seq_len,
+                device=device, dtype=dtype
+            )
+        else:
+            rope = None
         self.attn = MultiHeadSelfAttn(
             d_model, d_k=d_model, d_v=d_model, num_heads=num_heads,
-            rope=RoPE(d_model // num_heads, theta, max_seq_len,
-                      device=device, dtype=dtype),
-            device=device, dtype=dtype)
-        self.ln1 = RMSNorm(d_model, device=device, dtype=dtype)
-        self.ffn = SwiGLU(d_model, d_ff, device=device, dtype=dtype)
-        self.ln2 = RMSNorm(d_model, device=device, dtype=dtype)
+            rope=rope, device=device, dtype=dtype
+        )
+        self.norm_style = norm_style
+        if norm_style != "none":
+            self.ln1 = RMSNorm(d_model, device=device, dtype=dtype)
+            self.ln2 = RMSNorm(d_model, device=device, dtype=dtype)
+        if ffn_type == "swiglu":
+            self.ffn = SwiGLU(d_model, d_ff, device=device, dtype=dtype)
+        elif ffn_type == "silu":
+            self.ffn = SiLU(d_model, d_ff, device=device, dtype=dtype)
 
     def forward(
         self,
@@ -281,10 +315,22 @@ class TransformerBlock(nn.Module):
         mask: Int[Tensor, "... seq_q seq_k"] | None = None,
         pos_ids: Int[Tensor, "... seq"] | None = None
     ) -> Float[Tensor, "... seq d_model"]:
-        attn_resid = self.attn(self.ln1(x), mask, pos_ids)
+        if self.norm_style == "pre":
+            attn_in = self.ln1(x)
+        else:
+            attn_in = x
+        attn_resid = self.attn(attn_in, mask, pos_ids)
         x = x + attn_resid
-        ff_resid = self.ffn(self.ln2(x))
+        if self.norm_style == "post":
+            x = self.ln1(x)
+        if self.norm_style == "pre":
+            ffn_in = self.ln2(x)
+        else:
+            ffn_in = x
+        ff_resid = self.ffn(ffn_in)
         x = x + ff_resid
+        if self.norm_style == "post":
+            x = self.ln2(x)
         return x
 
 
@@ -301,6 +347,9 @@ class TransformerLM(nn.Module):
         d_ff: int,
         device: torch.device | None = None,
         dtype: torch.dtype | None = None,
+        norm_style: Literal["pre", "post", "none"] = "pre",
+        use_rope: bool = True,
+        ffn_type: Literal["swiglu", "silu"] = "swiglu",
         **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -309,12 +358,15 @@ class TransformerLM(nn.Module):
             TransformerBlock(
                 d_model=d_model, num_heads=num_heads, theta=theta,
                 max_seq_len=max_seq_len, d_ff=d_ff,
-                device=device, dtype=dtype
+                device=device, dtype=dtype,
+                norm_style=norm_style, use_rope=use_rope, ffn_type=ffn_type
             )
             for _ in range(num_layers)
         ])
-        self.ln_final = RMSNorm(d_model, device=device, dtype=dtype)
+        if norm_style == "pre":
+            self.ln_final = RMSNorm(d_model, device=device, dtype=dtype)
         self.lm_head = Linear(d_model, vocab_size, device=device, dtype=dtype)
+        self.norm_style = norm_style
 
     def forward(
         self,
@@ -325,5 +377,6 @@ class TransformerLM(nn.Module):
         h = self.token_embeddings(x)
         for transformer_block in self.layers:
             h = transformer_block(h, mask, pos_ids)
-        logits = self.lm_head(self.ln_final(h))
+        lm_in = self.ln_final(h) if self.norm_style == "pre" else h
+        logits = self.lm_head(lm_in)
         return logits

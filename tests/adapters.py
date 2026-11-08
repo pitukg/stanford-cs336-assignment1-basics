@@ -13,7 +13,7 @@ from checkpointing import load_checkpoint, save_checkpoint
 from cs336_basics import tokenizer
 from data import get_batch
 from losses import cross_entropy
-from model import Embedding, Linear, MultiHeadSelfAttn, RMSNorm, RoPE, SwiGLU, TransformerBlock, TransformerLM, log_softmax, scaled_dot_product_attn, softmax
+from model import Embedding, Linear, MultiHeadSelfAttn, RMSNorm, RoPE, SiLU, SwiGLU, TransformerBlock, TransformerLM, log_softmax, scaled_dot_product_attn, softmax
 from optimizers import AdamW, clip_grads
 from schedules import cosine_schedule
 
@@ -441,7 +441,7 @@ def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
         Float[Tensor,"..."]: of with the same shape as `in_features` with the output of applying
         SiLU to each element.
     """
-    return SwiGLU.silu(in_features)
+    return SiLU.nonlinearity(in_features)
 
 
 def run_get_batch(

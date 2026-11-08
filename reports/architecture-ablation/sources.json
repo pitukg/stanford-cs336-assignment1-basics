@@ -1,0 +1,76 @@
+{
+  "exported_at_utc": "2026-11-08T15:42:50.925907+00:00",
+  "token_axis": "trainer/step * 128 * 256",
+  "runs": [
+    {
+      "id": "zrknis7g",
+      "label": "Baseline",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/zrknis7g",
+      "state": "finished",
+      "peak_lr": 0.003,
+      "last_logged_step": 10000,
+      "last_validation_ce": 1.3433592319488525,
+      "last_10_validation_ce_mean": 1.361572027206421
+    },
+    {
+      "id": "uvxfrvkw",
+      "label": "Post-norm",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/uvxfrvkw",
+      "state": "finished",
+      "peak_lr": 0.003,
+      "last_logged_step": 10000,
+      "last_validation_ce": 1.3991992473602295,
+      "last_10_validation_ce_mean": 1.384251606464386
+    },
+    {
+      "id": "etdt1htc",
+      "label": "NoPE",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/etdt1htc",
+      "state": "finished",
+      "peak_lr": 0.003,
+      "last_logged_step": 10000,
+      "last_validation_ce": 1.4328593015670776,
+      "last_10_validation_ce_mean": 1.4331060647964478
+    },
+    {
+      "id": "o7z90ct0",
+      "label": "SiLU FFN",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/o7z90ct0",
+      "state": "finished",
+      "peak_lr": 0.003,
+      "last_logged_step": 10000,
+      "last_validation_ce": 1.3730602264404297,
+      "last_10_validation_ce_mean": 1.3756566405296327
+    },
+    {
+      "id": "zdmar4dy",
+      "label": "No norm \u00b7 LR 3e-3 (original)",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/zdmar4dy",
+      "state": "failed",
+      "peak_lr": 0.003,
+      "last_logged_step": 700,
+      "last_validation_ce": 3257287424.0,
+      "last_10_validation_ce_mean": null
+    },
+    {
+      "id": "gjoj5m34",
+      "label": "No norm \u00b7 LR 3e-3 (logging fixed)",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/gjoj5m34",
+      "state": "failed",
+      "peak_lr": 0.003,
+      "last_logged_step": 3051,
+      "last_validation_ce": "nan",
+      "last_10_validation_ce_mean": null
+    },
+    {
+      "id": "17y53k0u",
+      "label": "No norm \u00b7 LR 1e-3",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/17y53k0u",
+      "state": "failed",
+      "peak_lr": 0.001,
+      "last_logged_step": 2886,
+      "last_validation_ce": 6868.05322265625,
+      "last_10_validation_ce_mean": null
+    }
+  ]
+}

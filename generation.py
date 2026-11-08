@@ -103,6 +103,9 @@ def main():
         theta=train_args.theta,
         max_seq_len=train_args.context_length,
         d_ff=train_args.d_ff,
+        norm_style=train_args.norm_style,
+        use_rope=train_args.use_rope,
+        ffn_type=train_args.ffn_type,
         device=args.device,
         dtype=args.dtype
     )

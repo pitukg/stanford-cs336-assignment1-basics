@@ -1,0 +1,35 @@
+name: tinystories-architecture-ablation
+base_config: ../tinystories-baseline.yaml
+
+resources:
+  gpu: A10
+  cpu: 4
+  memory_mb: 8192
+  timeout_s: 14400
+  concurrency: 2
+
+trials:
+  # - name: baseline
+
+  - name: norm-none-fixed
+    overrides:
+      norm_style: none
+
+  - name: norm-none-low-lr
+    overrides:
+      norm_style: none
+      lr: 1.0e-3
+      lr_min: 2.5e-4
+
+  # - name: norm-post
+  #   overrides:
+  #     norm_style: post
+
+  # - name: nope
+  #   overrides:
+  #     use_rope: false
+
+  # - name: silu
+  #   overrides:
+  #     ffn_type: silu
+  #     d_ff: 2048

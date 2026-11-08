@@ -136,6 +136,10 @@ def train(
             tokens_elapsed = cum_tokens_processed - tokens_processed
             tokens_processed = cum_tokens_processed
             perf_counter = now
+            logged_loss = loss.detach().to(device="cpu", dtype=torch.float64)
+            loss_value = logged_loss.item()
+            # Tensor exp returns inf on overflow, preserving the other diagnostics.
+            perplexity_value = logged_loss.exp().item()
             print(
                 f"step={iter}"
                 f"\tsession_tokens={cum_tokens_processed / 1e6:,.3f}M"
@@ -143,16 +147,15 @@ def train(
                 f"\tsession_total={total_elapsed:.2f}s"
                 f"\tthroughput={tokens_elapsed / elapsed / 1e3:,.2f}k tok/s"
                 f"\tlr={lr:.2e}"
-                f"\tperplexity={torch.exp(loss.detach().cpu()).item():.2f}"
+                f"\tperplexity={perplexity_value:.2f}"
                 f"\tpreclip_grad_norm={latest_preclip_grad_norm:.2f}"
                 f"\tsession_clip_fraction={session_did_clip/session_clip_denom:.2%}"
             )
             if wandb.run is not None:
-                loss_value = loss.detach().cpu().item()
                 wandb.log({
                     "trainer/step": iter,
                     "train/cross_entropy": loss_value,
-                    "train/perplexity": math.exp(loss_value),
+                    "train/perplexity": perplexity_value,
                     "train/lr": lr,
                     "train/preclip_grad_norm": latest_preclip_grad_norm,
                     "train/session_clip_fraction": session_did_clip / session_clip_denom,
@@ -194,6 +197,9 @@ def get_argparser():
     parser.add_argument('--num-heads', required=True, type=int)
     parser.add_argument('--theta', default=10_000, type=float)
     parser.add_argument('--context-length', default=256, type=int)
+    parser.add_argument('--norm-style', choices=('pre', 'post', 'none'), default='pre')
+    parser.add_argument('--use-rope', action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument('--ffn-type', choices=('swiglu', 'silu'), default='swiglu')
 
     parser.add_argument('--device', default='cpu')
     parser.add_argument('--dtype', default='float32')
@@ -269,6 +275,9 @@ def main():
         theta=args.theta,
         max_seq_len=args.context_length,
         d_ff=args.d_ff,
+        norm_style=args.norm_style,
+        use_rope=args.use_rope,
+        ffn_type=args.ffn_type,
         device=args.device,
         dtype=args.dtype
     )

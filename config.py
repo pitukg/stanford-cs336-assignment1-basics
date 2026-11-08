@@ -52,7 +52,8 @@ def parse_config(
         try:
             if isinstance(
                 action,
-                (argparse._StoreTrueAction, argparse._StoreFalseAction),
+                (argparse._StoreTrueAction, argparse._StoreFalseAction,
+                 argparse.BooleanOptionalAction),
             ):
                 if not isinstance(value, bool):
                     raise ValueError("expected a YAML boolean")
