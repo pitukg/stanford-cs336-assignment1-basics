@@ -1,0 +1,54 @@
+{
+  "exported_at_utc": "2026-11-07T16:47:03.742849+00:00",
+  "token_axis": "trainer/step * batch_size * 256; verified against logged session_tokens",
+  "runs": [
+    {
+      "batch_size": 1,
+      "id": "0k57duz3",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/0k57duz3",
+      "state": "finished",
+      "final_val_ce": 2.0828258991241455,
+      "last_10_val_ce_mean": 2.115984654426575
+    },
+    {
+      "batch_size": 16,
+      "id": "s7t6t614",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/s7t6t614",
+      "state": "finished",
+      "final_val_ce": 1.4707579612731934,
+      "last_10_val_ce_mean": 1.4920063734054565
+    },
+    {
+      "batch_size": 32,
+      "id": "5ma61g3b",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/5ma61g3b",
+      "state": "finished",
+      "final_val_ce": 1.420039415359497,
+      "last_10_val_ce_mean": 1.4223143935203553
+    },
+    {
+      "batch_size": 64,
+      "id": "xfjtw0sm",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/xfjtw0sm",
+      "state": "finished",
+      "final_val_ce": 1.3935490846633911,
+      "last_10_val_ce_mean": 1.3800086975097656
+    },
+    {
+      "batch_size": 128,
+      "id": "1sv7kjj9",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/1sv7kjj9",
+      "state": "finished",
+      "final_val_ce": 1.3701740503311157,
+      "last_10_val_ce_mean": 1.3666773796081544
+    },
+    {
+      "batch_size": 160,
+      "id": "znkgg8z8",
+      "url": "https://wandb.ai/pgab/cs336-basics/runs/znkgg8z8",
+      "state": "finished",
+      "final_val_ce": 1.364558458328247,
+      "last_10_val_ce_mean": 1.3644229412078857
+    }
+  ]
+}

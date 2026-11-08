@@ -9,8 +9,8 @@ context_length: 256
 device: cuda
 dtype: float32
 
-lr: 1e-3
-lr-min: 2.5e-4
+lr: 3.0e-3
+lr_min: 7.5e-4
 weight_decay: 0.1
 beta1: 0.9
 beta2: 0.999

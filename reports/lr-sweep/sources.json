@@ -1,5 +1,5 @@
 {
-  "exported_at_utc": "2026-11-06T15:44:28.636102+00:00",
+  "exported_at_utc": "2026-11-06T16:18:01.100495+00:00",
   "runs": [
     {
       "lr": "3e-4",
@@ -44,18 +44,18 @@
     {
       "lr": "3e-2",
       "id": "bxd9y7lz",
-      "state": "running",
+      "state": "finished",
       "url": "https://wandb.ai/pgab/cs336-basics/runs/bxd9y7lz",
       "first_logged_update": 1,
-      "last_step": 7836
+      "last_step": 10000
     },
     {
       "lr": "1e-1",
       "id": "bx0y6qc7",
-      "state": "running",
+      "state": "finished",
       "url": "https://wandb.ai/pgab/cs336-basics/runs/bx0y6qc7",
       "first_logged_update": 1,
-      "last_step": 8151
+      "last_step": 10000
     }
   ]
 }

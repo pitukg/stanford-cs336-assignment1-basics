@@ -1,0 +1,66 @@
+name: tinystories-batchsize-prelim
+base_config: ../tinystories-baseline.yaml
+
+resources:
+  gpu: A10
+  cpu: 4
+  memory_mb: 8192
+  timeout_s: 14400
+  concurrency: 2
+
+trials:
+  # - name: batch-size-1
+  #   overrides:
+  #     batch_size: 1
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  # - name: batch-size-16
+  #   overrides:
+  #     batch_size: 16
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  # - name: batch-size-32
+  #   overrides:
+  #     batch_size: 32
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  # - name: batch-size-64
+  #   overrides:
+  #     batch_size: 64
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  # - name: batch-size-128
+  #   overrides:
+  #     batch_size: 128
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  # - name: batch-size-256
+  #   overrides:
+  #     batch_size: 256
+  #     n_steps: 100
+  #     warmup: 20
+  #     final: 100
+
+  - name: batch-size-160
+    overrides:
+      batch_size: 160
+      n_steps: 100
+      warmup: 20
+      final: 100
+
+  - name: batch-size-192
+    overrides:
+      batch_size: 192
+      n_steps: 100
+      warmup: 20
+      final: 100

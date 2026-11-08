@@ -180,6 +180,12 @@ def train(
 
 
 def get_argparser():
+    def positive_int(value):
+        value = int(value)
+        if value <= 0:
+            raise argparse.ArgumentTypeError("must be a positive integer")
+        return value
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--num-layers', required=True, type=int)
     parser.add_argument('--vocab-size', default=10_000, type=int)
@@ -209,6 +215,9 @@ def get_argparser():
     parser.add_argument('--n-steps', default=1, type=int)
     parser.add_argument('--warmup', required=False, type=int, default=None)
     parser.add_argument('--final', required=False, type=int, default=None)
+    parser.add_argument('--eval-every-n-steps', type=positive_int, default=50)
+    parser.add_argument('--cpt-every-n-steps', type=positive_int, default=50)
+    parser.add_argument('--log-every-n-steps', type=positive_int, default=5)
 
     parser.add_argument('--rundir', required=True)
     parser.add_argument('--overwrite', action='store_true')
@@ -327,12 +336,18 @@ def main():
                 model, train_loader, valid_loader, optim,
                 lr_schedule, args.max_grad_l2_norm,
                 args.n_steps, args.device, args.rundir,
+                eval_every_n_steps=args.eval_every_n_steps,
+                cpt_every_n_steps=args.cpt_every_n_steps,
+                log_every_n_steps=args.log_every_n_steps,
             )
     else:
         train(
             model, train_loader, valid_loader, optim,
             lr_schedule, args.max_grad_l2_norm,
             args.n_steps, args.device, args.rundir,
+            eval_every_n_steps=args.eval_every_n_steps,
+            cpt_every_n_steps=args.cpt_every_n_steps,
+            log_every_n_steps=args.log_every_n_steps,
         )
 
 

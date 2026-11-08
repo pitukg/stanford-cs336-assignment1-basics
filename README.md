@@ -73,13 +73,50 @@ global gradient clipping at L2 norm `1.0`.
 | 1e-3 | 2.5e-4 | 1.3722 | 1.3834 |
 | 3e-3 | 7.5e-4 | 1.3314 | 1.3540 |
 | 1e-2 | 2.5e-3 | 1.3913 | 1.4300 |
+| 3e-2 | 7.5e-3 | 1.9955 | 1.9233 |
+| 1e-1 | 2.5e-2 | 4.3203 | 4.2956 |
 
-The `3e-2` and `1e-1` curves are partial snapshots of ongoing runs, not final
-results. The completed trials favor `3e-3` at this token budget; these are single
-trials rather than multi-seed estimates. No causal attribution of gradient-norm
+All six trials completed 10,000 updates. The results favor `3e-3` at this token
+budget. The `3e-2` run recovered from its early loss spike but finished well above
+the best trial; `1e-1` remained poor. These are single trials rather than multi-seed
+estimates. No causal attribution of gradient-norm
 differences to weight decay is established by this sweep.
 
 The exported [metric data](reports/lr-sweep/metrics.csv) and
 [source run IDs, states, and export time](reports/lr-sweep/sources.json) accompany
 the PDF. Live results are in the [W&B project](https://wandb.ai/pgab/cs336-basics).
 
+## Batch-size sweep
+
+[Download the batch-size sweep chart (PDF)](reports/batchsize-sweep/validation-vs-tokens.pdf)
+
+![Validation cross-entropy against training tokens](reports/batchsize-sweep/validation-vs-tokens.png)
+
+Each run processes 327.68M tokens, with LR `3e-3 → 7.5e-4` and 10% warmup.
+LR retuning per batch size was deferred.
+[Metric data](reports/batchsize-sweep/metrics.csv) · [Source runs](reports/batchsize-sweep/sources.json).
+
+## TinyStories generation
+
+Checkpoint: `tinystories-batchsize/batch-size-128`; temperature `0.2`, top-p `0.9`.
+
+**Prompt:** `The crab taught`
+
+**Generated continuation:**
+
+```text
+ the little fish how to swim fast. The little fish was happy. The crab was happy too. They became good friends. The moral of the story is: helping others can make you happy too.
+<|endoftext|>
+```
+
+```bash
+uv run modal shell modal_pilot.py::pilot --no-pty --cmd \
+"/.uv/.venv/bin/python /workspace/generation.py \
+  --rundir /runs/tinystories-batchsize/batch-size-128 \
+  --data-dir /data/encoding \
+  --device cuda \
+  --prompt 'The crab taught' \
+  --max-tokens 256 \
+  --temperature 0.2 \
+  --top-p 0.9"
+```
